@@ -1,16 +1,24 @@
+// --- IMPORTS (No Import Map Needed) ---
 import React, { useState, useEffect, useLayoutEffect, useMemo, Suspense, useCallback } from 'https://esm.sh/react@18.2.0';
 import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
 import * as THREE from 'https://esm.sh/three@0.160.0';
-import { Canvas } from 'https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three';
+import { Canvas, createPortal } from 'https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three';
 import { OrbitControls, Environment, Center, Bounds, useBounds, useGLTF, Html, useProgress, Decal, useTexture } from 'https://esm.sh/@react-three/drei@9.99.0?external=react,react-dom,three,@react-three/fiber';
 
-// --- INJECT CSS ---
+// --- INJECT CSS STYLES ---
 const style = document.createElement('style');
 style.textContent = `
-  #viewer-topbar-steps, #viewer-botbar-steps, #viewer-botbar-done, #viewer-topbar-done, #summary, #intro, #steps { z-index: 100; }
+  #viewer-topbar-steps, #viewer-botbar-steps, #viewer-botbar-done,
+  #viewer-topbar-done, #summary, #intro, #steps { z-index: 100; }
   #steps { scroll-behavior: smooth; }
-  @media (min-width: 992px) { #steps { overflow-y: auto; overflow-x: hidden; scroll-snap-type: y mandatory; } #steps > div { scroll-snap-align: center; } }
-  @media (max-width: 991px) { #steps { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; } #steps > div { scroll-snap-align: center; } }
+  @media (min-width: 992px) {
+    #steps { overflow-y: auto; overflow-x: hidden; scroll-snap-type: y mandatory; }
+    #steps > div { scroll-snap-align: center; }
+  }
+  @media (max-width: 991px) {
+    #steps { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; }
+    #steps > div { scroll-snap-align: center; }
+  }
   .active-swatch { outline: 0.5px solid #000000 !important; outline-offset: 6px; z-index: 10; }
   .color-btn, .w-button, [role="button"] { -webkit-touch-callout: none !important; -webkit-user-select: none !important; user-select: none !important; }
   .fade-element { transition: opacity 0.5s ease; opacity: 1; }
@@ -19,11 +27,12 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// --- CONFIGURATION ---
 const MODEL_SCALE = 150; 
 const CAMERA_POSITION = [0, 5, 35]; 
-const e = React.createElement; 
+const e = React.createElement; // Short helper for React.createElement
 
-// --- DATABASE (Updated from your Supabase List) ---
+// --- DATABASE (Updated with your Supabase .glb links) ---
 const FILE_DATABASE = {
   "Boom - Nylon": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Boom%20-%20Nylon.glb",
   "Boom - Polished Gold": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Boom%20-%20Polished%20Gold.glb",
@@ -47,7 +56,7 @@ const FILE_DATABASE = {
   "Bud Power - Left - Polished Stainless Steel": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20-%20Polished%20Stainless%20Steel.glb",
   "Bud Power - Left (Spare) - Nylon": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20(Spare)%20-%20Nylon.glb",
   "Bud Power - Left (Spare) - Polished Gold": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20(Spare)%20-%20Polished%20Gold.glb",
-  "Bud Power - Left (Spare) - Polished Stainless Steel": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20(Spare)%20-%20Polished%20Stainless%20Steel.glb",
+  "Bud Power - Left (Spare) - Polished Stainless Steel": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20(Spare)%20-%20Polished%20Stainless%20Steel.glb", // Corrected per your list
   "Bud Power - Right - Nylon": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Nylon.glb",
   "Bud Power - Right - Polished Gold": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Polished%20Gold.glb",
   "Bud Power - Right - Polished Stainless Steel": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Polished%20Stainless%20Steel.glb",
@@ -75,7 +84,7 @@ const MODULE_NAMES = ["Bud Power - Right", "Bud Power - Left", "Bud Compute - Ri
 const COLORS = { Light: '#dbdbdb', Dark: '#000000', Red: '#f4020b', Blue: '#3b7de1', Yellow: '#f8c441', Green: '#3e623b', Purple: '#a72eae' };
 const INITIAL_CONFIG = MODULE_NAMES.reduce((acc, name) => { acc[name] = COLORS.Light; return acc; }, {});
 
-// --- MJF NYLON TEXTURE ---
+// --- MJF NYLON TEXTURE GENERATOR ---
 const useGrainTexture = () => {
   return useMemo(() => {
     const width = 512, height = 512;
@@ -86,13 +95,13 @@ const useGrainTexture = () => {
     const imgData = ctx.getImageData(0, 0, width, height);
     const data = imgData.data;
     for (let i = 0; i < data.length; i += 4) {
-      const noise = (Math.random() - 0.5) * 120;
+      const noise = (Math.random() - 0.5) * 120; // High contrast
       data[i] += noise; data[i + 1] += noise; data[i + 2] += noise;
     }
     ctx.putImageData(imgData, 0, 0);
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(50, 50);
+    texture.repeat.set(50, 50); // High repetition
     return texture;
   }, []);
 };
@@ -102,6 +111,7 @@ function Loader() {
   return e(Html, { center: true }, e("div", { className: "Paragraph - Center" }, Math.round(progress), "%"));
 }
 
+// --- RIG (Camera) ---
 const Rig = ({ visibility, setIsZooming }) => {
   const api = useBounds();
   useEffect(() => {
@@ -191,6 +201,7 @@ const GraphicDecal = ({ textureUrl, type, baseColor, isSelected, localSurfaceDat
   );
 };
 
+// --- SUBPART (With Fixed Portal) ---
 const SubPart = ({ name, url, materialSetting, color, onClick, grainTexture, uploads, activeModule, onTransformChange }) => {
   const { scene } = useGLTF(url);
   const clonedScene = useMemo(() => scene.clone(), [scene]);
@@ -204,9 +215,7 @@ const SubPart = ({ name, url, materialSetting, color, onClick, grainTexture, upl
         if (!foundMesh) foundMesh = child;
         child.material = child.material.clone();
         if (materialSetting.includes("Nylon")) {
-          child.material.color.set(color); 
-          child.material.roughness = 1.0; 
-          child.material.metalness = 0.0;
+          child.material.color.set(color); child.material.roughness = 1.0; child.material.metalness = 0.0;
           if (grainTexture) { child.material.bumpMap = grainTexture; child.material.bumpScale = 0.4; }
         } else if (materialSetting.includes("Gold")) {
           child.material.color.set("#d4af37"); child.material.roughness = 0.25; child.material.metalness = 1.0;
@@ -234,16 +243,25 @@ const SubPart = ({ name, url, materialSetting, color, onClick, grainTexture, upl
   const isTarget = activeModule === name; 
   const decalType = name.includes("Boom") ? "emboss" : "engrave";
 
+  // THE FIX: Directly call createPortal, DO NOT wrap it in e()
+  const portalNode = (isLandingZone && textureUrl && targetData.mesh && targetData.localSurfaceData) 
+    ? createPortal(
+        e(GraphicDecal, {
+          textureUrl: textureUrl, type: decalType, baseColor: color, isSelected: isTarget, isInteractive: isTarget,
+          localSurfaceData: targetData.localSurfaceData, targetMesh: targetData.mesh, initialTransform: initialTransform,
+          onTransformChange: (t) => onTransformChange(name, t)
+        }), 
+        targetData.mesh
+      ) 
+    : null;
+
   return e("group", { onClick: (e) => { e.stopPropagation(); onClick(name); } },
     e("primitive", { object: clonedScene }),
-    isLandingZone && textureUrl && targetData.mesh && targetData.localSurfaceData && e(GraphicDecal, {
-        textureUrl: textureUrl, type: decalType, baseColor: color, isSelected: isTarget, isInteractive: isTarget,
-        localSurfaceData: targetData.localSurfaceData, targetMesh: targetData.mesh, initialTransform: initialTransform,
-        onTransformChange: (t) => onTransformChange(name, t)
-    })
+    portalNode
   );
 };
 
+// --- ASSEMBLY ---
 const Assembly = ({ config, onModuleClick, visibility, uploads, activeModule, onTransformChange }) => {
   const grainTexture = useGrainTexture();
   return e("group", null,
@@ -269,6 +287,7 @@ const Assembly = ({ config, onModuleClick, visibility, uploads, activeModule, on
 
 Object.values(FILE_DATABASE).forEach(url => useGLTF.preload(url));
 
+// --- MAIN APP ---
 const App = () => {
   const [config, setConfig] = useState(INITIAL_CONFIG);
   const [visibility, setVisibility] = useState({ Boom: true, Hub: true });
