@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useLayoutEffect, useMemo, Suspense, useCallback } from 'https://esm.sh/react@18.2.0';
+// 1. IMPORTS
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, Suspense, useCallback } from 'https://esm.sh/react@18.2.0';
 import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
 import * as THREE from 'https://esm.sh/three@0.160.0';
-import { Canvas } from 'https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three';
+import { Canvas, createPortal } from 'https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three';
 import { OrbitControls, Environment, Center, Bounds, useBounds, useGLTF, Html, useProgress, Decal, useTexture } from 'https://esm.sh/@react-three/drei@9.99.0?external=react,react-dom,three,@react-three/fiber';
 
-// --- INJECT CSS ---
+// 2. INJECT CSS
 const style = document.createElement('style');
 style.textContent = `
   #viewer-topbar-steps, #viewer-botbar-steps, #viewer-botbar-done, #viewer-topbar-done, #summary, #intro, #steps { z-index: 100; }
@@ -21,9 +22,9 @@ document.head.appendChild(style);
 
 const MODEL_SCALE = 150; 
 const CAMERA_POSITION = [0, 5, 35]; 
-const e = React.createElement; 
+const e = React.createElement;
 
-// --- DATABASE (Updated with New Supabase URLs) ---
+// 3. DATABASE (New Supabase URLs)
 const FILE_DATABASE = {
   "Boom - Nylon": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Boom%20-%20Nylon.glb",
   "Boom - Polished Gold": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Boom%20-%20Polished%20Gold.glb",
@@ -75,7 +76,7 @@ const MODULE_NAMES = ["Bud Power - Right", "Bud Power - Left", "Bud Compute - Ri
 const COLORS = { Light: '#dbdbdb', Dark: '#000000', Red: '#f4020b', Blue: '#3b7de1', Yellow: '#f8c441', Green: '#3e623b', Purple: '#a72eae' };
 const INITIAL_CONFIG = MODULE_NAMES.reduce((acc, name) => { acc[name] = COLORS.Light; return acc; }, {});
 
-// --- MJF NYLON TEXTURE ---
+// --- NYLON TEXTURE ---
 const useGrainTexture = () => {
   return useMemo(() => {
     const width = 512, height = 512;
@@ -92,7 +93,7 @@ const useGrainTexture = () => {
     ctx.putImageData(imgData, 0, 0);
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(50, 50);
+    texture.repeat.set(4, 4);
     return texture;
   }, []);
 };
@@ -142,7 +143,7 @@ function getLocalSurfaceData(mesh) {
 }
 
 // --- GRAPHIC COMPONENT ---
-const GraphicDecal = ({ textureUrl, type, baseColor, isSelected, localSurfaceData, targetMesh, initialTransform, onTransformChange }) => {
+const GraphicDecal = ({ textureUrl, type, baseColor, isSelected, localSurfaceData, isInteractive, targetMesh, initialTransform, onTransformChange }) => {
   const texture = useTexture(textureUrl);
   const [state, setState] = useState(initialTransform || { x: 0, y: 0, rotation: 0, scale: 1.0 });
 
@@ -173,13 +174,13 @@ const GraphicDecal = ({ textureUrl, type, baseColor, isSelected, localSurfaceDat
 
   const materialProps = type === 'engrave' 
       ? { color: '#1a1a1a', roughness: 0.9, metalness: 0.1, transparent: true, opacity: 0.9, bumpMap: texture, bumpScale: 0.05, polygonOffset: true, polygonOffsetFactor: -4 }
-      : { color: baseColor, roughness: 0.4, metalness: 0.1, transparent: true, opacity: 1.0, alphaTest: 0.5, alphaMap: texture, map: null, bumpMap: texture, bumpScale: -0.2, polygonOffset: true, polygonOffsetFactor: -10, depthTest: true };
+      : { color: baseColor, roughness: 0.4, metalness: 0.1, transparent: true, opacity: 1.0, alphaTest: 0.2, alphaMap: texture, map: null, bumpMap: texture, bumpScale: 0.05, polygonOffset: true, polygonOffsetFactor: -10, depthTest: true };
 
   return e(React.Fragment, null,
     e(Decal, { mesh: targetMesh, position: config.pos, rotation: config.rot, scale: config.scale },
       e("meshStandardMaterial", materialProps)
     ),
-    isSelected && e(Html, { position: [0, 0, 0], center: true, style: { pointerEvents: 'none', width: '300px' } },
+    isInteractive && e(Html, { position: [0, 0, 0], center: true, style: { pointerEvents: 'none', width: '300px' } },
       e("div", { style: { pointerEvents: 'auto', background: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: '12px', transform: 'translateY(140px)', fontFamily: 'sans-serif' } },
         e("div", { style: { fontSize: '11px', fontWeight: 'bold', color: '#333', textTransform: 'uppercase', borderBottom: '1px solid #eee', paddingBottom: '5px' } }, "Graphic Controls"),
         e("label", { style: { fontSize: '10px', display: 'flex', flexDirection: 'column', gap: '4px' } }, e("span", { style: { display: 'flex', justifyContent: 'space-between' } }, "Move X ", e("span", { style: { color: '#888' } }, state.x.toFixed(3))), e("input", { type: "range", min: "-0.15", max: "0.15", step: "0.001", value: state.x, onInput: (e) => updateState({ ...state, x: parseFloat(e.target.value) }), style: { width: '100%' } })),
@@ -191,7 +192,7 @@ const GraphicDecal = ({ textureUrl, type, baseColor, isSelected, localSurfaceDat
   );
 };
 
-// --- SUBPART (FIXED - NO PORTAL) ---
+// --- SUBPART ---
 const SubPart = ({ name, url, materialSetting, color, onClick, grainTexture, uploads, activeModule, onTransformChange }) => {
   const { scene } = useGLTF(url);
   const clonedScene = useMemo(() => scene.clone(), [scene]);
@@ -205,8 +206,8 @@ const SubPart = ({ name, url, materialSetting, color, onClick, grainTexture, upl
         if (!foundMesh) foundMesh = child;
         child.material = child.material.clone();
         if (materialSetting.includes("Nylon")) {
-          child.material.color.set(color); child.material.roughness = 1.0; child.material.metalness = 0.0;
-          if (grainTexture) { child.material.bumpMap = grainTexture; child.material.bumpScale = 0.4; }
+          child.material.color.set(color); child.material.roughness = 0.95;
+          if (grainTexture) { child.material.bumpMap = grainTexture; child.material.bumpScale = 0.2; }
         } else if (materialSetting.includes("Gold")) {
           child.material.color.set("#d4af37"); child.material.roughness = 0.25; child.material.metalness = 1.0;
         } else if (materialSetting.includes("Stainless Steel")) {
@@ -233,13 +234,16 @@ const SubPart = ({ name, url, materialSetting, color, onClick, grainTexture, upl
   const isTarget = activeModule === name; 
   const decalType = name.includes("Boom") ? "emboss" : "engrave";
 
-  // RENDER DECAL AS DIRECT CHILD (No createPortal)
-  const graphicNode = (isLandingZone && textureUrl && targetData.mesh && targetData.localSurfaceData)
-    ? e(GraphicDecal, {
-        textureUrl: textureUrl, type: decalType, baseColor: color, isSelected: isTarget, isInteractive: isTarget,
-        localSurfaceData: targetData.localSurfaceData, targetMesh: targetData.mesh, initialTransform: initialTransform,
-        onTransformChange: (t) => onTransformChange(name, t)
-      })
+  // FIX: Using createPortal properly via e()
+  const graphicNode = (isLandingZone && textureUrl && targetData.mesh && targetData.localSurfaceData) 
+    ? createPortal(
+        e(GraphicDecal, {
+          textureUrl: textureUrl, type: decalType, baseColor: color, isSelected: isTarget, isInteractive: isTarget,
+          localSurfaceData: targetData.localSurfaceData, targetMesh: targetData.mesh, initialTransform: initialTransform,
+          onTransformChange: (t) => onTransformChange(name, t)
+        }),
+        targetData.mesh
+      ) 
     : null;
 
   return e("group", { onClick: (e) => { e.stopPropagation(); onClick(name); } },
@@ -248,6 +252,7 @@ const SubPart = ({ name, url, materialSetting, color, onClick, grainTexture, upl
   );
 };
 
+// --- ASSEMBLY ---
 const Assembly = ({ config, onModuleClick, visibility, uploads, activeModule, onTransformChange }) => {
   const grainTexture = useGrainTexture();
   return e("group", null,
