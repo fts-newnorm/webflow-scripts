@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useMemo, Suspense, useCallback } from 'https://esm.sh/react@18.2.0';
 import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
 import * as THREE from 'https://esm.sh/three@0.160.0';
-import { Canvas, createPortal } from 'https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three';
+import { Canvas } from 'https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three';
 import { OrbitControls, Environment, Center, Bounds, useBounds, useGLTF, Html, useProgress, Decal, useTexture } from 'https://esm.sh/@react-three/drei@9.99.0?external=react,react-dom,three,@react-three/fiber';
 
 // --- INJECT CSS ---
@@ -47,7 +47,7 @@ const FILE_DATABASE = {
   "Bud Power - Left - Polished Stainless Steel": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20-%20Polished%20Stainless%20Steel.glb",
   "Bud Power - Left (Spare) - Nylon": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20(Spare)%20-%20Nylon.glb",
   "Bud Power - Left (Spare) - Polished Gold": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20(Spare)%20-%20Polished%20Gold.glb",
-  "Bud Power - Left (Spare) - Polished Stainless Steel": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Polished%20Stainless%20Steel.glb", // Note: Source said Right? Kept as per source.
+  "Bud Power - Left (Spare) - Polished Stainless Steel": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20(Spare)%20-%20Polished%20Stainless%20Steel.glb",
   "Bud Power - Right - Nylon": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Nylon.glb",
   "Bud Power - Right - Polished Gold": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Polished%20Gold.glb",
   "Bud Power - Right - Polished Stainless Steel": "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Polished%20Stainless%20Steel.glb",
@@ -236,13 +236,11 @@ const SubPart = ({ name, url, materialSetting, color, onClick, grainTexture, upl
 
   return e("group", { onClick: (e) => { e.stopPropagation(); onClick(name); } },
     e("primitive", { object: clonedScene }),
-    isLandingZone && textureUrl && targetData.mesh && targetData.localSurfaceData && createPortal( 
-      e(GraphicDecal, {
+    isLandingZone && textureUrl && targetData.mesh && targetData.localSurfaceData && e(GraphicDecal, {
         textureUrl: textureUrl, type: decalType, baseColor: color, isSelected: isTarget, isInteractive: isTarget,
         localSurfaceData: targetData.localSurfaceData, targetMesh: targetData.mesh, initialTransform: initialTransform,
         onTransformChange: (t) => onTransformChange(name, t)
-      })
-    , targetData.mesh)
+    })
   );
 };
 
