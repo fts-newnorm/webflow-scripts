@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, Suspense, useCallback } from 'https://esm.sh/react@18.2.0';
+import React, { useState, useEffect, useLayoutEffect, useMemo, Suspense, useCallback } from 'https://esm.sh/react@18.2.0';
 import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
-import * as THREE from 'https://esm.sh/three@0.160.0';
 import { Canvas, createPortal } from 'https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three';
 import { OrbitControls, Environment, Center, Bounds, useBounds, useGLTF, Html, useProgress, Decal, useTexture } from 'https://esm.sh/@react-three/drei@9.99.0?external=react,react-dom,three,@react-three/fiber';
+import * as THREE from 'https://esm.sh/three@0.160.0';
 
-// --- INJECT CSS STYLES ---
+// --- INJECT CSS ---
 const style = document.createElement('style');
 style.textContent = `
   #viewer-topbar-steps, #viewer-botbar-steps, #viewer-botbar-done,
@@ -26,21 +26,21 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// --- CONSTANTS ---
-const MODEL_SCALE = 150; 
-const CAMERA_POSITION = [0, 5, 35]; 
+const MODEL_SCALE = 150;
+const CAMERA_POSITION = [0, 5, 35];
 
+// --- DATABASE (Corrected IDs) ---
 const FILE_DATABASE = {
   "Boom - Nylon": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5b141dfcaefcb1f452_Boom%20-%20Nylon.txt",
   "Boom - Polished Gold": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5bf2141b43d1be91e7_Boom%20-%20Polished%20Gold.txt",
   "Boom - Polished Stainless Steel": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5bd351091a7c76c060_Boom%20-%20Polished%20Stainless%20Steel.txt",
   "Bud Compute - Left - Nylon": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5cadefb7ca2e79aaa9_Bud%20Compute%20-%20Left%20-%20Nylon.txt",
   "Bud Compute - Left - Polished Gold": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5a141dfcaefcb1f3d1_Bud%20Compute%20-%20Left%20-%20Polished%20Gold.txt",
-  "Bud Compute - Left - Polished Stainless Steel Engravable": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5a21a90aa4a68d1ed0_Bud%20Compute%20-%20Left%20-%20Polished%20Stainless%20Steel.txt",
+  "Bud Compute - Left - Polished Stainless Steel Engravable": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5a21a90aa4a68d1ed0_Bud%20Compute%20-%20Left%20-%20Polished%20Stainless%20Steel%20Engravable.txt",
   "Bud Compute - Left - Polished Stainless Steel": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5dadefb7ca2e79ab05_Bud%20Compute%20-%20Left%20-%20Polished%20Stainless%20Steel.txt",
   "Bud Compute - Right - Nylon": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5c7dbeae0adaaef6d1_Bud%20Compute%20-%20Right%20-%20Nylon.txt",
   "Bud Compute - Right - Polished Gold": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5b0b76ff961c67f0f4_Bud%20Compute%20-%20Right%20-%20Polished%20Gold.txt",
-  "Bud Compute - Right - Polished Stainless Steel Engravable": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5c2f142990d3e52aa3_Bud%20Compute%20-%20Right%20-%20Polished%20Stainless%20Steel.txt",
+  "Bud Compute - Right - Polished Stainless Steel Engravable": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5c2f142990d3e52aa3_Bud%20Compute%20-%20Right%20-%20Polished%20Stainless%20Steel%20Engravable.txt",
   "Bud Compute - Right - Polished Stainless Steel": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5d2a9807b1a06d17bc_Bud%20Compute%20-%20Right%20-%20Polished%20Stainless%20Steel.txt",
   "Bud Peripheral - Left - Clear": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5c8c735120087e5045_Bud%20Peripheral%20-%20Left%20-%20Clear.txt",
   "Bud Peripheral - Left - Nylon": "https://cdn.prod.website-files.com/69189c0a912be2f270324dcc/6983af5e2c83a1cb24fdd357_Bud%20Peripheral%20-%20Left%20-%20Nylon.txt",
@@ -91,7 +91,6 @@ const COLORS = {
 
 const INITIAL_CONFIG = MODULE_NAMES.reduce((acc, name) => { acc[name] = COLORS.Light; return acc; }, {});
 
-// --- MJF NYLON TEXTURE (Grainy) ---
 const useGrainTexture = () => {
   return useMemo(() => {
     const width = 512; const height = 512;
@@ -102,13 +101,13 @@ const useGrainTexture = () => {
     const imgData = ctx.getImageData(0, 0, width, height);
     const data = imgData.data;
     for (let i = 0; i < data.length; i += 4) {
-      const noise = (Math.random() - 0.5) * 120; 
+      const noise = (Math.random() - 0.5) * 100;
       data[i] += noise; data[i + 1] += noise; data[i + 2] += noise;
     }
     ctx.putImageData(imgData, 0, 0);
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(50, 50); // High repeat for fine grain
+    texture.repeat.set(50, 50);
     return texture;
   }, []);
 };
@@ -240,7 +239,6 @@ const SubPart = ({ name, url, materialSetting, color, onClick, grainTexture, upl
         child.material = child.material.clone();
         if (materialSetting.includes("Nylon")) {
           child.material.color.set(color); 
-          // MJF NYLON SETTINGS
           child.material.roughness = 1.0; 
           child.material.metalness = 0.0;
           if (grainTexture) { 
@@ -586,7 +584,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { config } = event.detail;
       if (config) {
           syncButtonsWithConfig(config);
-          
           if (config.uploads) {
               const uploadMap = {
                   'Bud Compute - Right': 'btn-upload-bud-comp-right',
