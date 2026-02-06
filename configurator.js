@@ -35,91 +35,48 @@ const e = React.createElement; // Helper for readability
 // --- DATABASE (FIXED IDs from Draft 2) ---
 const FILE_DATABASE = {
   "Boom - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Boom%20-%20Nylon.glb" ,
-
   "Boom - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Boom%20-%20Polished%20Gold.glb" ,
-
   "Boom - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Boom%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Bud Compute - Left - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Compute%20-%20Left%20-%20Nylon.glb" ,
-
   "Bud Compute - Left - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Compute%20-%20Left%20-%20Polished%20Gold.glb" ,
-
   "Bud Compute - Left - Polished Stainless Steel Engravable" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Compute%20-%20Left%20-%20Polished%20Stainless%20Steel%20Engravable.glb" ,
-
   "Bud Compute - Left - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Compute%20-%20Left%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Bud Compute - Right - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Compute%20-%20Right%20-%20Nylon.glb" ,
-
   "Bud Compute - Right - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Compute%20-%20Right%20-%20Polished%20Gold.glb" ,
-
   "Bud Compute - Right - Polished Stainless Steel Engravable" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Compute%20-%20Right%20-%20Polished%20Stainless%20Steel%20Engravable.glb" ,
-
   "Bud Compute - Right - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Compute%20-%20Right%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Bud Peripheral - Left - Clear" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Peripheral%20-%20Left%20-%20Clear.glb" ,
-
   "Bud Peripheral - Left - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Peripheral%20-%20Left%20-%20Nylon.glb" ,
-
   "Bud Peripheral - Left - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Peripheral%20-%20Left%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Bud Peripheral - Right - Clear" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Peripheral%20-%20Right%20-%20Clear.glb" ,
-
   "Bud Peripheral - Right - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Peripheral%20-%20Right%20-%20Nylon.glb" ,
-
   "Bud Peripheral - Right - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Peripheral%20-%20Right%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Bud Power - Left - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20-%20Nylon.glb" ,
-
   "Bud Power - Left - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20-%20Polished%20Gold.glb" ,
-
   "Bud Power - Left - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Bud Power - Left (Spare) - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20(Spare)%20-%20Nylon.glb" ,
-
   "Bud Power - Left (Spare) - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Left%20(Spare)%20-%20Polished%20Gold.glb" ,
-
   "Bud Power - Left (Spare) - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Bud Power - Right - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Nylon.glb" ,
-
   "Bud Power - Right - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Polished%20Gold.glb" ,
-
   "Bud Power - Right - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Bud Power - Right (Spare) - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20(Spare)%20-%20Nylon.glb" ,
-
   "Bud Power - Right (Spare) - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20(Spare)%20-%20Polished%20Gold.glb" ,
-
   "Bud Power - Right (Spare) - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Bud%20Power%20-%20Right%20(Spare)%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Hub Compute - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Compute%20-%20Nylon.glb" ,
-
   "Hub Compute - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Compute%20-%20Polished%20Gold.glb" ,
-
   "Hub Compute - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Compute%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Hub Peripheral Boom - Clear" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Peripheral%20Boom%20-%20Clear.glb" ,
-
   "Hub Peripheral Boom - Grill Left - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Peripheral%20Boom%20-%20Grill%20Left%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Hub Peripheral Boom - Grill Right - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Peripheral%20Boom%20-%20Grill%20Right%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Hub Peripheral Boom - Nylon Embossable" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Peripheral%20Boom%20-%20Nylon%20Embossable.glb" ,
-
   "Hub Peripheral Boom - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Peripheral%20Boom%20-%20Nylon.glb" ,
-
   "Hub Peripheral Boom - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Peripheral%20Boom%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Hub Power - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Power%20-%20Nylon.glb" ,
-
   "Hub Power - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Power%20-%20Polished%20Gold.glb" ,
-
   "Hub Power - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Power%20-%20Polished%20Stainless%20Steel.glb" ,
-
   "Hub Power (Spare) - Nylon" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Power%20(Spare)%20-%20Nylon.glb" ,
-
   "Hub Power (Spare) - Polished Gold" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Power%20(Spare)%20-%20Polished%20Gold.glb" ,
-
   "Hub Power (Spare) - Polished Stainless Steel" : "https://bkcoeqkdrclqeabqwodu.supabase.co/storage/v1/object/public/models/Hub%20Power%20(Spare)%20-%20Polished%20Stainless%20Steel.glb"
 };
 
